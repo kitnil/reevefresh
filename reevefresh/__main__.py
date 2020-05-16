@@ -5,8 +5,12 @@ import time
 import os
 import http.client
 import json
+import sys
 from twitch import Helix
 from slack import WebClient
+
+twitch_access_token_expires_in = 0 # parameter (seconds in integer)
+twitch_access_token = "" # parameter (string)
 
 def main():
     parser = argparse.ArgumentParser(description="Twitch notifications")
@@ -22,11 +26,17 @@ def main():
     TWITCH_CLIENT_ID=os.environ["TWITCH_CLIENT_ID"]
     TWITCH_CLIENT_SECRET=os.environ["TWITCH_CLIENT_SECRET"]
     def bearer():
-        connection = http.client.HTTPSConnection("id.twitch.tv")
-        connection.request("POST", "/oauth2/token?client_id=" + TWITCH_CLIENT_ID
-                           + "&client_secret=" + TWITCH_CLIENT_SECRET
-                           + "&grant_type=client_credentials")
-        return json.loads(connection.getresponse().read().decode('utf8'))['access_token']
+        global twitch_access_token_expires_in
+        global twitch_access_token
+        if (twitch_access_token_expires_in < (60 * 15) and not twitch_access_token):
+            connection = http.client.HTTPSConnection("id.twitch.tv")
+            connection.request("POST", "/oauth2/token?client_id=" + TWITCH_CLIENT_ID
+                               + "&client_secret=" + TWITCH_CLIENT_SECRET
+                               + "&grant_type=client_credentials")
+            response = json.loads(connection.getresponse().read().decode('utf8'))
+            twitch_access_token = response['access_token']
+            twitch_access_token_expires_in = int(response['expires_in'])
+        return twitch_access_token
 
     while(True):
         twitch = Helix(client_id=TWITCH_CLIENT_ID,
@@ -45,10 +55,10 @@ def main():
                 else:
                     if user in remember_online_users:
                         remember_online_users.remove(user)
-        except error.HTTPError as exception:
-            print("ERROR: {}".format(exception))
+        except Exception as exception:
+            print(exception)
             slack.chat_postMessage(channel=args.notifications,
-                                   attachments=[{"text": "ERROR: Failed to receive Twitch user status: {}".format(exception),
+                                   attachments=[{"text": "ERROR: reevefresh: Failed to fetch Twitch users status",
                                                  "color": "#ff0000"}])
         print("Online users: {}\n".format(",".join(remember_online_users)))
         time.sleep(args.interval)
