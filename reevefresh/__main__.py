@@ -21,9 +21,6 @@ def main():
 
     TWITCH_CLIENT_ID=os.environ["TWITCH_CLIENT_ID"]
     TWITCH_CLIENT_SECRET=os.environ["TWITCH_CLIENT_SECRET"]
-    TWITCH_REDIRECT_URI=os.environ["TWITCH_REDIRECT_URI"]
-    TWITCH_RESPONCE_TYPE=os.environ["TWITCH_RESPONCE_TYPE"]
-    TWITCH_SCOPE=os.environ["TWITCH_SCOPE"]
     def bearer():
         connection = http.client.HTTPSConnection("id.twitch.tv")
         connection.request("POST", "/oauth2/token?client_id=" + TWITCH_CLIENT_ID
