@@ -29,8 +29,7 @@ def main():
         connection.request("POST", "/oauth2/token?client_id=" + TWITCH_CLIENT_ID
                            + "&client_secret=" + TWITCH_CLIENT_SECRET
                            + "&grant_type=client_credentials")
-        response = connection.getresponse()
-        return json.loads(response.read().decode('utf8'))['access_token']
+        return json.loads(connection.getresponse().read().decode('utf8'))['access_token']
 
     while(True):
         twitch = Helix(client_id=TWITCH_CLIENT_ID,
