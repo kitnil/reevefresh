@@ -8,6 +8,7 @@ from slack import WebClient
 
 def main():
     parser = argparse.ArgumentParser(description="Twitch notifications")
+    parser.add_argument("-c", "--channel", default="#video", help="Slack channel")
     parser.add_argument("-i", "--interval", default=30, help="Update interval in seconds", type=int)
     parser.add_argument("-u", "--users", default="", help="Twitch users")
     args = parser.parse_args()
@@ -20,7 +21,7 @@ def main():
                 print("TWITCH_LIVE: {}".format(user))
                 if user not in remember_online_users:
                     remember_online_users.append(user)
-                    slack.chat_postMessage(channel="#video", text="TWITCH_LIVE: https://www.twitch.tv/{}".format(user))
+                    slack.chat_postMessage(channel=args.channel, text="TWITCH_LIVE: https://www.twitch.tv/{}".format(user))
             else:
                 if user in remember_online_users:
                     remember_online_users.remove(user)
